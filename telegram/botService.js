@@ -9,10 +9,18 @@ async function makeBotService({ config, services }) {
   const bot = new Telegraf(config.TELEGRAM_TOKEN);
   try {
     bot.launch();
-    bot.start((ctx) => {
-      console.log(ctx.update.message.from);
+    bot.start(async (ctx) => {
       ctx.reply('Welcome, my name is JUJU');
       bot.telegram.sendMessage(getUserId(ctx), 'HELLO');
+      const checkUser = await services.storageApi.checkUserExists({
+        userId: getUserId(ctx),
+      });
+      if (!checkUser) {
+        await services.storageApi.registerUser({
+          userId: getUserId(ctx),
+          lang: 'eng',
+        });
+      }
     });
   } catch (error) {
     console.log(error);
