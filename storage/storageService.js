@@ -1,16 +1,15 @@
 const mongoose = require('mongoose');
-require('dotenv').config();
 
 module.exports = {
   makeStorageService,
 };
 
-async function makeStorageService() {
+async function makeStorageService({ config }) {
   connect();
 
   async function connect() {
     try {
-      await mongoose.connect(process.env.DB_CONNECTION, {
+      await mongoose.connect(config.DB_CONNECTION, {
         useUnifiedTopology: true,
         useNewUrlParser: true,
       });
