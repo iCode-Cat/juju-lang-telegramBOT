@@ -1,25 +1,31 @@
 const { Telegraf } = require('telegraf');
 const getUserId = require('../lib/getUserId');
+const dialog = require('../dialog');
 module.exports = {
   makeBotService,
 };
 
 async function makeBotService({ config, services }) {
-  // INIT BOT
   const bot = new Telegraf(config.TELEGRAM_TOKEN);
+  const { checkUserExists, registerUser, removeUser } = services.storageApi;
+  // INIT BOT
+
   try {
     bot.launch();
     bot.start(async (ctx) => {
-      ctx.reply('Welcome, my name is JUJU');
-      bot.telegram.sendMessage(getUserId(ctx), 'HELLO');
-      const checkUser = await services.storageApi.checkUserExists({
+      const checkUser = await checkUserExists({
         userId: getUserId(ctx),
       });
+
       if (!checkUser) {
-        await services.storageApi.registerUser({
-          userId: getUserId(ctx),
-          lang: 'eng',
+        // Send initial message to none members
+        await ctx.reply(dialog.hello);
+        bot.telegram.sendMessage(getUserId(ctx), dialog.chooseLang.question, {
+          reply_markup: {
+            inline_keyboard: [...dialog.chooseLang.options],
+          },
         });
+        return;
       }
     });
   } catch (error) {

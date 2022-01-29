@@ -24,8 +24,19 @@ async function makeStorage() {
       console.log(error);
     }
   }
+
+  async function removeUser({ userId }) {
+    try {
+      await User.deleteOne({ userId });
+      console.log('User Removed ' + userId);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   return {
     checkUserExists,
     registerUser,
+    removeUser,
   };
 }

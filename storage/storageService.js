@@ -16,6 +16,7 @@ async function makeStorageService({ config }) {
       console.log('Connected to DB succesfully');
     } catch (error) {
       console.log(error);
+      process.exit(1);
     }
   }
 }
