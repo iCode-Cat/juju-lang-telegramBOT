@@ -20,8 +20,6 @@ const services = {
 async function run() {
   services.storageService = await makeStorageService({ config });
   services.storageApi = await makeStorage();
-  services.botService = await makeBotService({ config, services });
   services.webScrapper = await makeWebScrapper({ config, services });
-
-  await services.webScrapper.getMeaningWord();
+  services.botService = await makeBotService({ config, services });
 }

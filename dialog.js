@@ -34,4 +34,16 @@ module.exports = {
       ],
     ],
   },
+  meaning: [
+    [
+      {
+        text: 'Translate',
+        callback_data: 'translate',
+      },
+      {
+        text: 'Save',
+        callback_data: 'save',
+      },
+    ],
+  ],
 };
