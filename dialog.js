@@ -7,29 +7,29 @@ module.exports = {
       [
         {
           text: 'German',
-          callback_data: 'de',
+          callback_data: 'lang de',
         },
         {
           text: 'French',
-          callback_data: 'fr',
+          callback_data: 'lang fr',
         },
         {
           text: 'Italian',
-          callback_data: 'it',
+          callback_data: 'lang it',
         },
       ],
       [
         {
           text: 'Turkish',
-          callback_data: 'tr',
+          callback_data: 'lang tr',
         },
         {
           text: 'Russian',
-          callback_data: 'ru',
+          callback_data: 'lang ru',
         },
         {
           text: 'Chinese',
-          callback_data: 'ch',
+          callback_data: 'lang ch',
         },
       ],
     ],
@@ -46,4 +46,5 @@ module.exports = {
       },
     ],
   ],
+  chooseFirst: 'Please choose your mother language first.',
 };
