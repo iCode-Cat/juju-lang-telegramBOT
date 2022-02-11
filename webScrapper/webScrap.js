@@ -15,7 +15,9 @@ async function makeWebScrapper({ services }) {
       const meaning =
         // eslint-disable-next-line max-len
         'div.ddef_h > div';
-      const browser = await puppeteer.launch();
+      const browser = await puppeteer.launch({
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      });
       const page = await browser.newPage();
       await page.goto(domain + language + word);
       const url = page.url();
