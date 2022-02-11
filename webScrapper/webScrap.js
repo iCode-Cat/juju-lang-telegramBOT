@@ -4,8 +4,11 @@ module.exports = {
   makeWebScrapper,
 };
 
-async function makeWebScrapper() {
+async function makeWebScrapper({ services }) {
   const getMeaningWord = async (word) => {
+    // When word already exist just return that
+    const permWord = await services.storageApi.getPermWord({ word });
+    if (permWord) return permWord.meaning;
     try {
       const domain = 'https://dictionary.cambridge.org';
       const language = '/us/dictionary/english/';

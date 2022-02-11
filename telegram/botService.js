@@ -13,7 +13,12 @@ module.exports = {
 
 async function makeBotService({ config, services }) {
   const bot = new Telegraf(config.TELEGRAM_TOKEN);
-  const { checkUserExists, registerUser, removeUser } = services.storageApi;
+  const {
+    checkUserExists,
+    registerUser,
+    saveTemp,
+    savePerm,
+  } = services.storageApi;
   const { getMeaningWord } = services.webScrapper;
 
   await chat();
@@ -30,37 +35,35 @@ async function makeBotService({ config, services }) {
       // Send meaning on text
       bot.on('text', async (ctx) => {
         // Warn user who did not choose mother language yet
-        if (await onUserNotExists(ctx, true)) return;
+        if (await onUserNotExists(ctx)) return;
+        const meaningWord = await getMeaningWord(getUserText(ctx));
+        const userText = getUserText(ctx);
+        // Save temp word of user on text
+        await saveTemp({
+          userId: getUserId(ctx),
+          word: userText,
+          meaning: meaningWord,
+        });
         // Translate word by user text
-        bot.telegram.sendMessage(
-          getUserId(ctx),
-          await getMeaningWord(getUserText(ctx)),
-          {
-            reply_markup: {
-              inline_keyboard: [...dialog.meaning],
-            },
-          }
-        );
+        bot.telegram.sendMessage(getUserId(ctx), meaningWord, {
+          reply_markup: {
+            inline_keyboard: [...dialog.meaning],
+          },
+        });
+        // Save perm word
+        await savePerm({ word: userText, meaning: meaningWord });
       });
     } catch (error) {
       console.log(error);
     }
   }
 
-  async function onUserNotExists(ctx, secondStep = false) {
+  async function onUserNotExists(ctx) {
     const checkUser = await checkUserExists({
       userId: getUserId(ctx),
     });
 
     if (!checkUser) {
-      if (secondStep) {
-        bot.telegram.sendMessage(getUserId(ctx), dialog.chooseFirst, {
-          reply_markup: {
-            inline_keyboard: [...dialog.chooseLang.options],
-          },
-        });
-        return;
-      }
       // Send initial message to none members
       await ctx.reply(dialog.hello);
       bot.telegram.sendMessage(getUserId(ctx), dialog.chooseLang.question, {
@@ -70,19 +73,22 @@ async function makeBotService({ config, services }) {
       });
       return true;
     }
+    if (!checkUser) return true;
   }
 
   async function checkInlineQueries() {
-    bot.on('callback_query', (ctx) => {
-      const lang = getCallBackData(ctx).split('lang')[1].replace(' ', '');
+    bot.on('callback_query', async (ctx) => {
+      const lang = getCallBackData(ctx)
+        .split('lang')[1]
+        .replace(' ', '');
       switch (getCallBackData(ctx)) {
         case 'lang tr':
-          console.log('you chosen Turkish!');
+          await registerUser({ userId: getCallBackDataUserId(ctx), lang });
           bot.telegram.sendMessage(
             getCallBackDataUserId(ctx),
             'You choosen Turkish!'
           );
-          registerUser({ userId: getCallBackDataUserId(ctx), lang });
+          console.log(getCallBackDataUserId(ctx));
           break;
         default:
           break;
