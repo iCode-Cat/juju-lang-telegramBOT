@@ -28,6 +28,7 @@ async function makeWebScrapper({ services }) {
       await page.waitForSelector(meaning);
       const element = await page.$(meaning);
       const value = await page.evaluate((el) => el.textContent, element);
+      await browser.close();
       return value;
     } catch (error) {
       console.log(error);
