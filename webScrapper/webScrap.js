@@ -21,7 +21,7 @@ async function makeWebScrapper({ services }) {
       const url = page.url();
       if (url === domain + language) {
         await browser.close();
-        return 'I could not find that';
+        return false;
       }
       await page.waitForSelector(meaning);
       const element = await page.$(meaning);

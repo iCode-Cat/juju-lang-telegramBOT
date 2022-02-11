@@ -18,6 +18,8 @@ async function makeBotService({ config, services }) {
     registerUser,
     saveTemp,
     savePerm,
+    getTempWord,
+    saveUserWord,
   } = services.storageApi;
   const { getMeaningWord } = services.webScrapper;
 
@@ -38,20 +40,24 @@ async function makeBotService({ config, services }) {
         if (await onUserNotExists(ctx)) return;
         const meaningWord = await getMeaningWord(getUserText(ctx));
         const userText = getUserText(ctx);
-        // Save temp word of user on text
-        await saveTemp({
-          userId: getUserId(ctx),
-          word: userText,
-          meaning: meaningWord,
-        });
-        // Translate word by user text
-        bot.telegram.sendMessage(getUserId(ctx), meaningWord, {
-          reply_markup: {
-            inline_keyboard: [...dialog.meaning],
-          },
-        });
-        // Save perm word
-        await savePerm({ word: userText, meaning: meaningWord });
+        if (meaningWord) {
+          // Save temp word of user on text
+          await saveTemp({
+            userId: getUserId(ctx),
+            word: userText,
+            meaning: meaningWord,
+          });
+          // Translate word by user text
+          bot.telegram.sendMessage(getUserId(ctx), meaningWord, {
+            reply_markup: {
+              inline_keyboard: [...dialog.meaning],
+            },
+          });
+          // Save perm word
+          await savePerm({ word: userText, meaning: meaningWord });
+          return;
+        }
+        bot.telegram.sendMessage(getUserId(ctx), 'I could not find this word.');
       });
     } catch (error) {
       console.log(error);
@@ -78,17 +84,36 @@ async function makeBotService({ config, services }) {
 
   async function checkInlineQueries() {
     bot.on('callback_query', async (ctx) => {
-      const lang = getCallBackData(ctx)
-        .split('lang')[1]
-        .replace(' ', '');
       switch (getCallBackData(ctx)) {
         case 'lang tr':
-          await registerUser({ userId: getCallBackDataUserId(ctx), lang });
+          await registerUser({
+            userId: getCallBackDataUserId(ctx),
+            lang: getCallBackData(ctx)
+              .split('lang')[1]
+              .replace(' ', ''),
+          });
           bot.telegram.sendMessage(
             getCallBackDataUserId(ctx),
-            'You choosen Turkish!'
+            'You choosen Turkish! Please enter a word.'
           );
-          console.log(getCallBackDataUserId(ctx));
+          break;
+        case 'save':
+          const userId = getCallBackDataUserId(ctx);
+          const getUser = await checkUserExists({ userId });
+          const tempWord = await getTempWord({
+            userId,
+          });
+          // save temp data to user word
+          await saveUserWord({
+            word: tempWord.word,
+            meaning: tempWord.meaning,
+            userId: getUser._id,
+          });
+
+          bot.telegram.sendMessage(
+            userId,
+            'You saved the word, you will get notification to repeat it.'
+          );
           break;
         default:
           break;

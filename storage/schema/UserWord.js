@@ -5,6 +5,7 @@ const wordSchema = new mongoose.Schema(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
     word: { type: String, lowercase: true, trim: true },
+    meaning: { type: String },
   },
   { timestamps: true }
 );

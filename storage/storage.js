@@ -1,6 +1,7 @@
 const User = require('./schema/User');
 const UserTemp = require('./schema/Temporary');
 const Word = require('./schema/Word');
+const UserWord = require('./schema/UserWord');
 
 module.exports = {
   makeStorage,
@@ -57,9 +58,26 @@ async function makeStorage() {
     }
   }
 
+  async function saveUserWord({ word, meaning, userId }) {
+    // save word to perm store
+    const checkWord = await UserWord.findOne({ word });
+    if (checkWord) return false;
+    if (!checkWord) {
+      await UserWord.create({ userId, word, meaning });
+    }
+  }
+
   async function getPermWord({ word }) {
     try {
       return await Word.findOne({ word });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async function getTempWord({ userId }) {
+    try {
+      return await UserTemp.findOne({ userId });
     } catch (error) {
       console.log(error);
     }
@@ -72,5 +90,7 @@ async function makeStorage() {
     saveTemp,
     savePerm,
     getPermWord,
+    getTempWord,
+    saveUserWord,
   };
 }
