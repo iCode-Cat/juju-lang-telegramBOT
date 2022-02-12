@@ -29,7 +29,10 @@ async function makeBotService({ config, services }) {
     try {
       await bot.launch();
       bot.start(async (ctx) => {
-        return onUserNotExists(ctx);
+        // Ask initial question for none-users
+        if (await onUserNotExists(ctx)) return;
+        // Greet users already exist
+        bot.telegram.sendMessage(getUserId(ctx), 'Hi! Please type a word.');
       });
 
       await checkInlineQueries();
@@ -80,6 +83,7 @@ async function makeBotService({ config, services }) {
       return true;
     }
     if (!checkUser) return true;
+    return false;
   }
 
   async function checkInlineQueries() {
@@ -104,12 +108,17 @@ async function makeBotService({ config, services }) {
             userId,
           });
           // save temp data to user word
-          await saveUserWord({
+          const userWord = await saveUserWord({
             word: tempWord.word,
             meaning: tempWord.meaning,
             userId: getUser._id,
           });
-
+          if (userWord) {
+            return bot.telegram.sendMessage(
+              userId,
+              'This word is already exists.'
+            );
+          }
           bot.telegram.sendMessage(
             userId,
             'You saved the word, you will get notification to repeat it.'

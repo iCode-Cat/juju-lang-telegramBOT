@@ -38,6 +38,7 @@ async function makeStorage() {
     }
   }
 
+  // Save user temp word
   async function saveTemp({ userId, word, meaning }) {
     try {
       const findTemp = await UserTemp.findOne({ userId });
@@ -49,9 +50,8 @@ async function makeStorage() {
       console.log(error);
     }
   }
-
+  // save word to perm store
   async function savePerm({ word, meaning }) {
-    // save word to perm store
     const searchPermWord = await Word.findOne({ word });
     if (!searchPermWord) {
       await Word.create({ word, meaning });
@@ -60,8 +60,8 @@ async function makeStorage() {
 
   async function saveUserWord({ word, meaning, userId }) {
     // save word to perm store
-    const checkWord = await UserWord.findOne({ word });
-    if (checkWord) return false;
+    const checkWord = await UserWord.findOne({ word, userId });
+    if (checkWord) return true;
     if (!checkWord) {
       await UserWord.create({ userId, word, meaning });
     }
@@ -83,6 +83,16 @@ async function makeStorage() {
     }
   }
 
+  async function getAllWords() {
+    try {
+      return await UserWord.find()
+        .lean()
+        .populate('userId');
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   return {
     checkUserExists,
     registerUser,
@@ -92,5 +102,6 @@ async function makeStorage() {
     getPermWord,
     getTempWord,
     saveUserWord,
+    getAllWords,
   };
 }
