@@ -151,10 +151,17 @@ async function makeBotService({ config, services }) {
             getCallBackMessage(ctx).lastIndexOf('-')
           );
           const translated = await translateWord(word);
-          bot.telegram.sendMessage(
+          const translateMstg = await bot.telegram.sendMessage(
             getCallBackDataUserId(ctx),
             word + ':' + translated
           );
+
+          setTimeout(() => {
+            bot.telegram.deleteMessage(
+              translateMstg.chat.id,
+              translateMstg.message_id
+            );
+          }, 1000 * 60 * 5);
 
           // 1ateWord()
           break;

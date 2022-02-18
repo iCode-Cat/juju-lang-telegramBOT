@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bing-translate-api": "^2.2.1",
     "dotenv": "^14.3.2",
     "express": "^4.17.2",
     "free-translate": "^0.6.1",
