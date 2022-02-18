@@ -112,5 +112,8 @@ async function schedule({ config, services }) {
   }
 
   repetation();
+  setInterval(() => {
+    repetation();
+  }, 1000 * 60 * 20);
   return { repetation };
 }
