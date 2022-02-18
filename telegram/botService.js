@@ -5,8 +5,11 @@ const {
   getUserText,
   getCallBackData,
   getCallBackDataUserId,
+  getCallBackMessage,
+  getCallDeleteData,
 } = require('../lib/telegramParser');
 const dialog = require('../dialog');
+const translateWord = require('../lib/translate');
 module.exports = {
   makeBotService,
 };
@@ -51,11 +54,21 @@ async function makeBotService({ config, services }) {
             meaning: meaningWord,
           });
           // Translate word by user text
-          bot.telegram.sendMessage(getUserId(ctx), meaningWord, {
-            reply_markup: {
-              inline_keyboard: [...dialog.meaning],
-            },
-          });
+          const meaningMsg = await bot.telegram.sendMessage(
+            getUserId(ctx),
+            meaningWord,
+            {
+              reply_markup: {
+                inline_keyboard: [...dialog.meaning],
+              },
+            }
+          );
+          setTimeout(() => {
+            bot.telegram.deleteMessage(
+              meaningMsg.chat.id,
+              meaningMsg.message_id
+            );
+          }, 1000 * 60 * 5);
           // Save perm word
           await savePerm({ word: userText, meaning: meaningWord });
           return;
@@ -114,15 +127,44 @@ async function makeBotService({ config, services }) {
             userId: getUser._id,
           });
           if (userWord) {
-            return bot.telegram.sendMessage(
+            const warn = await bot.telegram.sendMessage(
               userId,
               'This word is already exists.'
             );
+            setTimeout(() => {
+              bot.telegram.deleteMessage(warn.chat.id, warn.message_id);
+            }, 5000);
+            return;
           }
-          bot.telegram.sendMessage(
+          const saved = await bot.telegram.sendMessage(
             userId,
             'You saved the word, you will get notification to repeat it.'
           );
+          setTimeout(() => {
+            bot.telegram.deleteMessage(saved.chat.id, saved.message_id);
+          }, 5000);
+          console.log(saved);
+          break;
+        case 'translate':
+          const word = getCallBackMessage(ctx).slice(
+            1,
+            getCallBackMessage(ctx).lastIndexOf('-')
+          );
+          const translated = await translateWord(word);
+          bot.telegram.sendMessage(
+            getCallBackDataUserId(ctx),
+            word + ':' + translated
+          );
+
+          // 1ateWord()
+          break;
+        case 'delete':
+          bot.telegram.deleteMessage(
+            getCallDeleteData(ctx).chatId,
+            getCallDeleteData(ctx).messageId
+          );
+
+          // 1ateWord()
           break;
         default:
           break;

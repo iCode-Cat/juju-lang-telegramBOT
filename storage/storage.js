@@ -93,6 +93,14 @@ async function makeStorage() {
     }
   }
 
+  async function updateWordPhase({ id, nextPhase }) {
+    try {
+      return await UserWord.updateOne({ _id: id }, { phase: nextPhase }).lean();
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   return {
     checkUserExists,
     registerUser,
@@ -103,5 +111,6 @@ async function makeStorage() {
     getTempWord,
     saveUserWord,
     getAllWords,
+    updateWordPhase,
   };
 }

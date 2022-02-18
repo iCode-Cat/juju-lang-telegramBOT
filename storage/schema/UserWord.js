@@ -6,6 +6,7 @@ const wordSchema = new mongoose.Schema({
   word: { type: String, lowercase: true, trim: true },
   meaning: { type: String },
   time: { type: Date, default: Date.now() },
+  phase: { type: Number, default: 1 },
 });
 
 module.exports = UserWord = mongoose.model('user_word', wordSchema);
