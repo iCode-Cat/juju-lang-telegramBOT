@@ -19,7 +19,7 @@ async function schedule({ config, services }) {
     try {
       const words = await services.storageApi.getAllWords();
       const repetation = words.map(async (x) => {
-        const wordAfter1D = addDays(x, 0);
+        const wordAfter1D = addDays(x, 1);
         const wordAfter7D = addDays(x, 7);
         const wordAfter14D = addDays(x, 16);
         const wordAfter35D = addDays(x, 35);
